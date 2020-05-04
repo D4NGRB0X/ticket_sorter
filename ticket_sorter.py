@@ -13,13 +13,13 @@ import pandas as pd
 import os
 from pathlib import Path
 
-
-file_path = input('Input file path: \n')
+client = input('Please specify a client: ')
 month = input('Please enter the month: \n')
+file_path = input('Input file path: \n').strip('"')
 
 file_list = Path(file_path).glob('*.xlsx')
 
-with open(f'{month.title()}.txt', 'w') as ticket_data:
+with open(f'{client.title()}-{month.title()}.txt', 'w') as ticket_data:
     for file in file_list:
         with pd.ExcelFile(file) as xls:
             sun = pd.read_excel(xls, 0)
@@ -32,18 +32,14 @@ with open(f'{month.title()}.txt', 'w') as ticket_data:
 
             days = [sun, mon, tue, wed, thu, fri, sat]
 
+            # turn this into a function
             for day in days:
                 try:
                     day = day[['Customer', 'Ticket Number/Action:', 'Time Worked:']].dropna()
                     if not day.empty:
-                        cl1 = day['Customer'].str.contains('Client1')
+                        cl1 = day['Customer'].str.contains(client.title())
                         ticket_data.write(
-                            'Client 1 \n' + day.loc[cl1].to_string(
-                                columns=['Ticket Number/Action:'], index=False, header=False
-                            ) + '\n\n')
-                        cl2 = day['Customer'].str.contains('Client2')
-                        ticket_data.write(
-                            'Client 2 \n' + day.loc[cl2].to_string(
+                            f'{client.upper()} \n' + day.loc[cl1].to_string(
                                 columns=['Ticket Number/Action:'], index=False, header=False
                             ) + '\n\n')
 
