@@ -1,7 +1,7 @@
 # ticket_sorter
 automated ticket sorting for support desk
 
-This is to make my life easier formonthly service ticket reporting.
+This is to make my life easier for monthly service ticket reporting.
 
 It is a cli tool that breaks down an xlsx file by client and outputs to .txt file.
 
