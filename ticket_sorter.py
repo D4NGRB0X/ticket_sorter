@@ -39,14 +39,24 @@ with open(f'{client.title()}-{month.title()}.txt', 'w') as ticket_data:
                         for day in range(7)]
 
             for day in days:
-
                 try:
-                    day = day[[
-                        'Start Time:',
-                        'End Time:',
-                        'Customer',
-                        'Ticket Number/Action:',
-                        'Time Worked:']].dropna()
+                    if 'Customer' in day.columns.values:
+                        day = day[[
+                            'Start Time:',
+                            'End Time:',
+                            'Customer',
+                            'Ticket Number/Action:',
+                            'Time Worked:']].dropna()
+                    else:
+                        day = day[[
+                            'Start Time:',
+                            'End Time:',
+                            'Company',
+                            'Ticket Number/Action:',
+                            'Time Worked:']].dropna()
+                        day.rename(columns={
+                            'Company': 'Customer'
+                        }, inplace=True)
 
                     day.rename(columns={
                         'Start Time:': 'start',
