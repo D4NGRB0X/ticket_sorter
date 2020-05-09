@@ -1,4 +1,4 @@
-'''
+"""
 TODO: File pathing
     - check for xls files in dir
     - check for info match
@@ -8,7 +8,7 @@ TODO: Output
 TODO: distribution
     - Package as executable
         - pyinstaller may work
-'''
+"""
 import pandas as pd
 import os
 import time
@@ -58,11 +58,7 @@ with open(f'{client.title()}-{month.title()}.txt', 'w') as ticket_data:
 
                 except AttributeError:
                     pass
-# else:
-#     print('''
-#     There has been an error. please check the following:\n
-#     Do the .xlsx files exist in the file path you have selected?
-#     ''')
+
 timer_finish = time.perf_counter()
 
 print(f'Job\'s done. in {round(timer_finish - timer_start, 2)} second(s)')
