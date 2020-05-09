@@ -21,14 +21,22 @@ file_path = input('Input file path: \n').strip('"')
 timer_start = time.perf_counter()
 
 file_list = Path(file_path).glob('*.xlsx')
+
 path = Path.home().joinpath('Documents')
+
 os.chdir(path)
+
 with open(f'{client.title()}-{month.title()}.txt', 'w') as ticket_data:
+    # Creates new text file with naming convention <Client>-<user specified date range>.txt
     for file in file_list:
-        ticket_data.write(f'{file}\n\n')
-        with pd.ExcelFile(file) as xls:
-            days = [pd.read_excel(xls, day, parse_dates=['Start Time:', 'End Time:', 'Time Worked:'])
-                    for day in range(7)]
+        ticket_data.write(f'{file.stem}\n\n')  # Prints file name without path or extension
+        with pd.ExcelFile(file) as xls:  # creates pandas dataframe for each sheet specified in file
+            num_sheets = len(xls.sheet_names)
+            if num_sheets < 7:
+                days = [pd.read_excel(xls, parse_dates=['Start Time:', 'End Time:', 'Time Worked:'])]
+            else:
+                days = [pd.read_excel(xls, day, parse_dates=['Start Time:', 'End Time:', 'Time Worked:'])
+                        for day in range(7)]
 
             for day in days:
 
@@ -52,7 +60,7 @@ with open(f'{client.title()}-{month.title()}.txt', 'w') as ticket_data:
                     if not day.empty:
                         client_data = day['Customer'].str.contains(client.title())
                         ticket_data.write(
-                            f'{client.upper()} {day.worked.sum()} \n' + day.loc[client_data].to_string(
+                            f'{client.upper()} {day.worked.sum()} \n\n' + day.loc[client_data].to_string(
                                 columns=['tickets', 'worked'], index=False, header=False
                             ) + '\n\n')
 
