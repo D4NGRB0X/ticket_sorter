@@ -31,23 +31,26 @@ os.chdir(path)
 def data_handling(client):
     for day in days:
         try:
-            if 'Customer' in day.columns.values:  # test for series header customer
-                day = day[[
-                    'Start Time:',
-                    'End Time:',
-                    'Customer',
-                    'Ticket Number/Action:',
-                    'Time Worked:']].dropna()
-            else:  # handle if client name not customer
-                day = day[[
-                    'Start Time:',
-                    'End Time:',
-                    'Company',
-                    'Ticket Number/Action:',
-                    'Time Worked:']].dropna()
+            if 'Company' in day.columns.values:  # test for series header customer
                 day.rename(columns={
                     'Company': 'Customer'
                 }, inplace=True)
+            day = day[[
+                'Start Time:',
+                'End Time:',
+                'Customer',
+                'Ticket Number/Action:',
+                'Time Worked:']].dropna()
+            # else:  # handle if client name not customer
+            #     day = day[[
+            #         'Start Time:',
+            #         'End Time:',
+            #         'Company',
+            #         'Ticket Number/Action:',
+            #         'Time Worked:']].dropna()
+            #     day.rename(columns={
+            #         'Company': 'Customer'
+            #     }, inplace=True)
 
             # rename series headers to pandas/python friendly
             day.rename(columns={
@@ -75,9 +78,6 @@ for file in file_list:
         # creates new text file with naming convention <Client>-<user specified date range>.txt
         ticket_data.write(f'{file.stem}\n\n')  # prints file name without path or extension
         with pd.ExcelFile(file) as xls:  # creates pandas dataframe for each sheet specified in file
-            if client == '':
-                clients = pd.read_excel(xls, 'Client_List', header=None, index_col=None)
-                client_list = list(chain.from_iterable(clients.values.tolist()))
             num_sheets = len(xls.sheet_names)
             if num_sheets < 7:  # data collected on single sheet
                 days = [pd.read_excel(xls, parse_dates=['Start Time:', 'End Time:', 'Time Worked:'])]
@@ -86,6 +86,8 @@ for file in file_list:
                         for day in range(7)]
 
             if client == '':
+                clients = pd.read_excel(xls, 'Client_List', header=None, index_col=None)
+                client_list = list(chain.from_iterable(clients.values.tolist()))
                 for client in client_list:
                     data_handling(client)
             else:
