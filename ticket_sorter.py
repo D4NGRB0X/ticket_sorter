@@ -41,16 +41,6 @@ def data_handling(client):
                 'Customer',
                 'Ticket Number/Action:',
                 'Time Worked:']].dropna()
-            # else:  # handle if client name not customer
-            #     day = day[[
-            #         'Start Time:',
-            #         'End Time:',
-            #         'Company',
-            #         'Ticket Number/Action:',
-            #         'Time Worked:']].dropna()
-            #     day.rename(columns={
-            #         'Company': 'Customer'
-            #     }, inplace=True)
 
             # rename series headers to pandas/python friendly
             day.rename(columns={
@@ -64,10 +54,11 @@ def data_handling(client):
 
             if not day.empty:  # ignores sheets with no data
                 client_data = day['Customer'].str.contains(client.title())  # setup for client data
-                ticket_data.write(  # writes column of all tickets worked for specific client
-                    f'{client.upper()} {day.worked.sum()} \n\n' + day.loc[client_data].to_string(
-                        columns=['tickets', 'worked'], index=False, header=False
-                    ) + '\n\n')
+                if not day.loc[client_data].empty:
+                    ticket_data.write(  # writes column of all tickets worked for specific client
+                        f'{client.upper()} {day.worked.sum()} \n\n' + day.loc[client_data].to_string(
+                            columns=['tickets'], index=False, header=False
+                        ) + '\n\n')
 
         except AttributeError:
             pass
@@ -85,11 +76,13 @@ for file in file_list:
                 days = [pd.read_excel(xls, day, parse_dates=['Start Time:', 'End Time:', 'Time Worked:'])
                         for day in range(7)]
 
-            if client == '':
+            if client == 'all' or client == '':
                 clients = pd.read_excel(xls, 'Client_List', header=None, index_col=None)
                 client_list = list(chain.from_iterable(clients.values.tolist()))
                 for client in client_list:
                     data_handling(client)
+                client = ''  # reset client var to empty
+
             else:
                 data_handling(client)
 
