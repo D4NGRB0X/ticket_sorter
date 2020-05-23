@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from itertools import chain
 
+
 client = input('Please specify a client: \n')
 month = input('Please enter the month: \n')
 file_path = input('Input file path: \n').strip('"')
@@ -55,8 +56,9 @@ def data_handling(client):
             if not day.empty:  # ignores sheets with no data
                 client_data = day['Customer'].str.contains(client.title())  # setup for client data
                 if not day.loc[client_data].empty:
+                    total_time = day.loc[client_data].worked.sum().to_pytimedelta()
                     ticket_data.write(  # writes column of all tickets worked for specific client
-                        f'{client.upper()} {day.worked.sum()} \n\n' + day.loc[client_data].to_string(
+                        f'{client.upper()} {str(total_time):.7} \n\n' + day.loc[client_data].to_string(
                             columns=['tickets'], index=False, header=False
                         ) + '\n\n')
 
@@ -65,7 +67,7 @@ def data_handling(client):
 
 
 for file in file_list:
-    with open(f'{file.stem}-{month.title()}.txt', 'a+') as ticket_data:
+    with open(f'{file.stem}-{client.title()}-{month.title()}.txt', 'a+') as ticket_data:
         # creates new text file with naming convention <Client>-<user specified date range>.txt
         ticket_data.write(f'{file.stem}\n\n')  # prints file name without path or extension
         with pd.ExcelFile(file) as xls:  # creates pandas dataframe for each sheet specified in file
@@ -90,6 +92,7 @@ timer_finish = time.perf_counter()
 
 print(f'Job\'s done. in {round(timer_finish - timer_start, 2)} second(s)')
 print(f'Your file is saved to {path}')
+
 
 if __name__ == "__main__":
     pass
