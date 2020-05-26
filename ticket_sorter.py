@@ -9,16 +9,17 @@ TODO: distribution
     - Package as executable
         - pyinstaller may work
 """
+import re
 import pandas as pd
 import os
 import time
 from pathlib import Path
 from itertools import chain
 
-
-client = input('Please specify a client: \n')
-month = input('Please enter the month: \n')
 file_path = input('Input file path: \n').strip('"')
+month = input('Please enter the month: \n')
+client = input('Please specify a client: \n')
+
 
 timer_start = time.perf_counter()
 
@@ -30,6 +31,7 @@ os.chdir(path)
 
 
 def data_handling(client):
+
     for day in days:
         try:
             if 'Company' in day.columns.values:  # test for series header customer
@@ -47,6 +49,7 @@ def data_handling(client):
             day.rename(columns={
                 'Start Time:': 'start',
                 'End Time:': 'end',
+                'Customer': 'customer',
                 'Ticket Number/Action:': 'tickets',
                 'Time Worked:': 'worked'
             }, inplace=True)  # does swap directly
@@ -54,7 +57,8 @@ def data_handling(client):
             day.worked = day.end - day.start  # calculates time worked per ticket
 
             if not day.empty:  # ignores sheets with no data
-                client_data = day['Customer'].str.contains(client.title())  # setup for client data
+                client_data = day.customer.str.contains(client, flags=re.IGNORECASE)  # setup for client data
+                # flag=re.IGNORECASE checks for is catch all for user input
                 if not day.loc[client_data].empty:
                     total_time = day.loc[client_data].worked.sum().to_pytimedelta()
                     ticket_data.write(  # writes column of all tickets worked for specific client
@@ -79,11 +83,12 @@ for file in file_list:
                         for day in range(7)]
 
             if client == 'all' or client == '':
+                client = 'all'
                 clients = pd.read_excel(xls, 'Client_List', header=None, index_col=None)
                 client_list = list(chain.from_iterable(clients.values.tolist()))
                 for client in client_list:
                     data_handling(client)
-                client = ''  # reset client var to empty
+                client = 'all'  # reset client var to empty
 
             else:
                 data_handling(client)
